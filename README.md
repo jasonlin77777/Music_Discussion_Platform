@@ -82,7 +82,7 @@ llow read, write: if true;
  5. 管理員功能體驗：
         賦予管理員權限：
             重要步驟：需要先將自己的帳號設定為管理員。在瀏覽器打開任意頁面（例如 http://localhost:3000），按下 F12 打開開發者工具，切換到「主控台 (Console)」分頁。
-           * 執行命令：貼上以下 JavaScript 程式碼，並將 jasonlin77777@gmail.com 替換為您自己的註冊郵箱，然後按下 Enter 執行：
+           * 執行命令：貼上以下 JavaScript 程式碼，並將'您的註冊郵箱'替換為您自己的註冊郵箱，然後按下 Enter 執行：
 fetch('/api/admin/promote', {
 method: 'POST',
 headers: {
