@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "../../../lib/fsUtils.js";
+import { getDocument, updateDocument } from "@/app/lib/fsUtils.js";
 
 export async function POST(req) {
   const { postId } = await req.json();
-  const posts = await readData("posts.json");
 
-  const index = posts.findIndex(p => p.id === postId);
-  if (index === -1) return NextResponse.json({ error: "找不到貼文" }, { status: 404 });
+  const post = await getDocument("posts", postId);
+  if (!post) return NextResponse.json({ error: "找不到貼文" }, { status: 404 });
 
-  posts[index].reported = true;
-  await writeData("posts.json", posts);
+  await updateDocument("posts", postId, { reported: true });
 
   return NextResponse.json({ message: "已檢舉該貼文" });
 }

@@ -1,9 +1,13 @@
 "use client";
 import styles from "../styles/CommentList.module.css";
 
-export default function CommentList({ comments }) {
-  const reportComment = async (id) => {
-    await fetch("/api/reports", { method: "POST", body: JSON.stringify({ type: "comment", targetId: id, reason: "不當留言", reporter: "TestUser" }), headers: { "Content-Type": "application/json" } });
+export default function CommentList({ comments, postId }) {
+  const reportComment = async (commentId) => {
+    await fetch("/comments/report", { 
+      method: "POST", 
+      body: JSON.stringify({ postId, commentId }), 
+      headers: { "Content-Type": "application/json" } 
+    });
     alert("已檢舉留言");
   };
 

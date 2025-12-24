@@ -60,6 +60,17 @@ export default function PostPage() {
     alert(data.message || data.error);
   };
 
+  const handleReportPost = async () => {
+    if (!user) return alert("請先登入才能檢舉貼文");
+    const res = await fetch("/api/posts/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: parseInt(id) }),
+    });
+    const data = await res.json();
+    alert(data.message || data.error);
+  };
+
   if (!post) return <p>貼文不存在或正在載入...</p>;
 
   return (
@@ -68,6 +79,11 @@ export default function PostPage() {
       <p>{post.content}</p>
       <p style={{ fontSize: "0.9em", color: "#555" }}>
         分類: {post.category} | 作者: {post.author} | {new Date(post.createdAt).toLocaleString()}
+        {user && ( // Only show report button if a user is logged in
+          <button onClick={handleReportPost} style={{ color: "red", marginLeft: "10px" }}>
+            檢舉貼文
+          </button>
+        )}
       </p>
 
       <hr style={{ margin: "20px 0" }} />

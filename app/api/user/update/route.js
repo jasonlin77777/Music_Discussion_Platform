@@ -1,18 +1,37 @@
 import { NextResponse } from "next/server";
-import { readData, writeData } from "../../../lib/fsUtils.js";
+import { readCollection, getDocument, updateDocument, setDocument } from "@/app/lib/fsUtils.js";
+import { readCollection as readSessions } from "@/app/lib/fsUtils.js"; // Alias for clarity
 
 export async function PUT(req) {
-  const { name, bio, avatar } = await req.json();
+  try {
+    const { name, bio, avatar } = await req.json();
 
-  const users = await readData("users.json");
+    // Get logged-in user from session
+    const sessions = await readSessions("sessions");
+    const loggedInUserSession = sessions[0]; // Assuming the first user in session is the logged-in one.
+    if (!loggedInUserSession) return NextResponse.json({ error: "尚未登入" }, { status: 401 });
 
-  // 假設目前登入的是第一個使用者
-  const user = users[0];
-  if (!user) return NextResponse.json({ error: "尚未登入" }, { status: 401 });
+    // Get the actual user document from the 'users' collection
+    const userDoc = await getDocument("users", loggedInUserSession.id);
+    if (!userDoc) return NextResponse.json({ error: "找不到使用者" }, { status: 404 });
 
-  const index = users.findIndex(u => u.email === user.email);
-  users[index] = { ...users[index], name, bio, avatar };
-  await writeData("users.json", users);
+    const updatedUserData = {
+      name: name || userDoc.name, // Use existing name if not provided
+      bio: bio || userDoc.bio,     // Use existing bio if not provided
+      avatar: avatar || userDoc.avatar, // Use existing avatar if not provided
+    };
 
-  return NextResponse.json({ message: "更新成功", user: users[index] });
+    // Update user in Firestore
+    await updateDocument("users", userDoc.id, updatedUserData);
+
+    // Also update the session
+    const updatedUserInSession = { ...loggedInUserSession, ...updatedUserData };
+    await setDocument("sessions", loggedInUserSession.id, updatedUserInSession);
+
+    return NextResponse.json({ message: "更新成功", user: updatedUserInSession });
+
+  } catch (err) {
+    console.error("更新個人資料失敗:", err);
+    return NextResponse.json({ error: "伺服器錯誤" }, { status: 500 });
+  }
 }
